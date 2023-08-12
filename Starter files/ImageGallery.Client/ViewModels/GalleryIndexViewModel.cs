@@ -1,17 +1,14 @@
-﻿using ImageGallery.Client.Controllers;
-using ImageGallery.Model;
-using System.Collections.Generic;
+﻿using ImageGallery.Model;
 
-namespace ImageGallery.Client.ViewModels
+namespace ImageGallery.Client.ViewModels;
+
+public class GalleryIndexViewModel
 {
-    public class GalleryIndexViewModel
+    public GalleryIndexViewModel(IEnumerable<Image> images)
     {
-        public IEnumerable<Image> Images { get; private set; }
-            = new List<Image>();
-
-        public GalleryIndexViewModel(IEnumerable<Image> images)
-        {
-           Images = images;
-        }
+        Images = images;
     }
+
+    public IEnumerable<Image> Images { get; }
+        = new List<Image>();
 }
