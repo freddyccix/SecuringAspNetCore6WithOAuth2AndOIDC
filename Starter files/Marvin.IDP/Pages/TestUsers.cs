@@ -21,10 +21,10 @@ public class TestUsers
 
                 Claims = new List<Claim>
                 {
-                    //new Claim("role", "FreeUser"),
+                    new("role", "FreeUser"),
                     new(JwtClaimTypes.GivenName, "David"),
-                    new(JwtClaimTypes.FamilyName, "Flagg")
-                    //new Claim("country", "nl")
+                    new(JwtClaimTypes.FamilyName, "Flagg"),
+                    new Claim("pais", "nl")
                 }
             },
             new TestUser
@@ -35,10 +35,10 @@ public class TestUsers
 
                 Claims = new List<Claim>
                 {
-                    //new Claim("role", "PayingUser"),
+                    new("role", "PayingUser"),
                     new(JwtClaimTypes.GivenName, "Emma"),
-                    new(JwtClaimTypes.FamilyName, "Flagg")
-                    //new Claim("country", "be")
+                    new(JwtClaimTypes.FamilyName, "Flagg"),
+                    new Claim("pais", "be")
                 }
             }
         };

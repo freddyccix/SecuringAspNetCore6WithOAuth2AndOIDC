@@ -24,9 +24,10 @@ public class GalleryRepository : IGalleryRepository
         return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
     }
 
-    public async Task<IEnumerable<Image>> GetImagesAsync()
+    public async Task<IEnumerable<Image>> GetImagesAsync(string owner)
     {
         return await _context.Images
+            .Where(i=>i.OwnerId == owner)
             .OrderBy(i => i.Title).ToListAsync();
     }
 

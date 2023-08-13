@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using ImageGallery.API.Services;
 using ImageGallery.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImageGallery.API.Controllers;
 
 [Route("api/images")]
 [ApiController]
+[Authorize]
 public class ImagesController : ControllerBase
 {
     private readonly IGalleryRepository _galleryRepository;
@@ -29,8 +31,15 @@ public class ImagesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Image>>> GetImages()
     {
+
+        var ownerId = User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+        if (ownerId is null)
+        {
+            throw new Exception("Identificador de usuario no se encuentra en token");
+        }
+
         // get from repo
-        var imagesFromRepo = await _galleryRepository.GetImagesAsync();
+        var imagesFromRepo = await _galleryRepository.GetImagesAsync(ownerId);
 
         // map to model
         var imagesToReturn = _mapper.Map<IEnumerable<Image>>(imagesFromRepo);
@@ -52,6 +61,8 @@ public class ImagesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "UserCanAddImage")]
+    [Authorize(Policy = "ClientCanWrite")]
     public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
     {
         // Automapper maps only the Title in our configuration
@@ -80,16 +91,23 @@ public class ImagesController : ControllerBase
         // be fixed during the course
         //imageEntity.OwnerId = ...;
 
-        // add and save.  
-        _galleryRepository.AddImage(imageEntity);
+        var ownerId = User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+        if (ownerId is not null)
+        {
+            imageEntity.OwnerId = ownerId;
+            // add and save.  
+            _galleryRepository.AddImage(imageEntity);
 
-        await _galleryRepository.SaveChangesAsync();
+            await _galleryRepository.SaveChangesAsync();
 
-        var imageToReturn = _mapper.Map<Image>(imageEntity);
+            var imageToReturn = _mapper.Map<Image>(imageEntity);
 
-        return CreatedAtRoute("GetImage",
-            new {id = imageToReturn.Id},
-            imageToReturn);
+            return CreatedAtRoute("GetImage",
+                new {id = imageToReturn.Id},
+                imageToReturn);
+        }
+
+        throw new Exception("Identificador de usuario no se encuentra en token");
     }
 
     [HttpDelete("{id}")]

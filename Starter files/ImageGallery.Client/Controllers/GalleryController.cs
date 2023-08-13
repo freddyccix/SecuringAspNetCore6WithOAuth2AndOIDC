@@ -124,13 +124,15 @@ public class GalleryController : Controller
         return RedirectToAction("Index");
     }
 
+    [Authorize(Policy = "UserCanAddImage")]
     public IActionResult AddImage()
     {
         return View();
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
+    [ValidateAntiForgeryToken]    
+    [Authorize(Policy = "UserCanAddImage")]
     public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)
     {
         if (!ModelState.IsValid) return View();
@@ -177,14 +179,16 @@ public class GalleryController : Controller
     {
 // get the saved identity token
         var identityToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.IdToken);
+        var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
         var userClaimsStringBuilder = new StringBuilder();
         foreach (var claim in User.Claims)
-        {
             userClaimsStringBuilder.AppendLine($"Claim type: {claim.Type} — Claim value: {claim.Value}");
-        }
 
 
-// log token & claims
-        _logger.LogInformation("Identity token & user claims: {identityToken} - {userClaimsStringBuilder}",identityToken,userClaimsStringBuilder);
+        // log token & claims
+        _logger.LogInformation("Identity token & user claims: {identityToken} - {userClaimsStringBuilder}",
+            identityToken, userClaimsStringBuilder);
+        _logger.LogInformation("Access token : {identityToken}",
+            accessToken);
     }
 }
